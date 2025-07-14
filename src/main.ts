@@ -4,6 +4,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   type User,
+  onAuthStateChanged,
 } from "firebase/auth";
 
 const firebaseConfig = {
@@ -27,21 +28,37 @@ const auth = getAuth(app);
 
 let currentUser: User | null = null;
 
+onAuthStateChanged(auth, (user: User | null) => {
+  if (user) {
+    console.log("ログイン済み");
+    currentUser = user;
+    updateProfile();
+  } else {
+    console.log("未ログイン");
+    const loginButton = document.getElementById('login-button');
+    if (loginButton) {
+      loginButton.addEventListener('click', login);
+      loginButton.style.display = '';
+    }
+  }
+});
+
 async function login() {
   const provider = new GoogleAuthProvider();
   const result = await signInWithPopup(auth, provider);
   currentUser = result.user;
+  updateProfile();
+}
 
-  // uid の情報を #uid へ出力
+async function updateProfile() {
+  // ログインユーザーの情報を #profile へ出力
   const profileElm = document.getElementById('profile');
-  if (profileElm) {
+  if (profileElm && currentUser) {
     profileElm.innerHTML = `ユーザー: ${currentUser.displayName}`;
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOMContentLoaded');
 
-  document.getElementById('login-button').addEventListener('click', login);
 });
 
