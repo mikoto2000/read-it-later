@@ -6,6 +6,7 @@ import {
   type User,
   onAuthStateChanged,
 } from "firebase/auth";
+import { collection, getDocs, getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -17,14 +18,11 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
-// app の情報を #app へ出力
-const appElm = document.getElementById('app');
-if (appElm) {
-  appElm.innerHTML = JSON.stringify(app);
-}
-
 const auth = getAuth(app);
+const db = getFirestore(app);
+
+const ROOT_DOCUMENT_NAME = 'read-it-later';
+const BOOKMARKS_DOCUMENT_NAME = 'bookmarks';
 
 let currentUser: User | null = null;
 
@@ -33,6 +31,9 @@ onAuthStateChanged(auth, (user: User | null) => {
     console.log("ログイン済み");
     currentUser = user;
     updateProfile();
+    if (currentUser) {
+      fetchBookmarks(currentUser);
+    }
   } else {
     console.log("未ログイン");
     const loginButton = document.getElementById('login-button');
@@ -48,6 +49,9 @@ async function login() {
   const result = await signInWithPopup(auth, provider);
   currentUser = result.user;
   updateProfile();
+  if (currentUser) {
+    fetchBookmarks(currentUser);
+  }
 }
 
 async function updateProfile() {
@@ -56,6 +60,17 @@ async function updateProfile() {
   if (profileElm && currentUser) {
     profileElm.innerHTML = `ユーザー: ${currentUser.displayName}`;
   }
+}
+
+async function fetchBookmarks(user: User) {
+
+  console.log(user.uid);
+  const bookmarksRef = collection(db, ROOT_DOCUMENT_NAME, user.uid, BOOKMARKS_DOCUMENT_NAME);
+  const docs = await getDocs(bookmarksRef);
+
+  docs.forEach(doc => {
+    console.log(doc.id, doc.data());
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
