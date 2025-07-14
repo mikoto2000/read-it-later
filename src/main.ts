@@ -65,12 +65,21 @@ async function updateProfile() {
 async function fetchBookmarks(user: User) {
 
   console.log(user.uid);
-  const bookmarksRef = collection(db, ROOT_DOCUMENT_NAME, user.uid, BOOKMARKS_DOCUMENT_NAME);
-  const docs = await getDocs(bookmarksRef);
+  const bookmarksElm = document.getElementById('bookmarks');
+  if (bookmarksElm) {
+    const bookmarksRef = collection(db, ROOT_DOCUMENT_NAME, user.uid, BOOKMARKS_DOCUMENT_NAME);
+    const docs = await getDocs(bookmarksRef);
 
-  docs.forEach(doc => {
-    console.log(doc.id, doc.data());
-  });
+    docs.forEach(doc => {
+      console.log(doc.id, doc.data());
+      const data = doc.data();
+      const a = document.createElement('a');
+      a.setAttribute('href', data.url);
+      a.textContent = data.title;
+
+      bookmarksElm.append(a);
+    });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
