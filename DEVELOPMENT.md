@@ -42,6 +42,8 @@ Ok to proceed? (y) y
 
 ## Firebase プロジェクト
 
+### プロジェクト作成
+
 1. 作成
     - プロジェクト名: `read-it-later`
     - Firebase プロジェクトの AI アシスタンス: 有効
@@ -55,4 +57,7 @@ Ok to proceed? (y) y
     - ロケーション: `asia-northeast1 (Tokyo)`
     - セキュリティルール: テストモードで開始
 
+### アプリ追加
+
+1. `プロジェクトの設定` -> `マイアプリ` -> `Web`(アイコン)
 
