@@ -6,7 +6,13 @@ import {
   type User,
   onAuthStateChanged,
 } from "firebase/auth";
-import { collection, getDocs, getFirestore } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  deleteDoc,
+  getDocs,
+  getFirestore } from "firebase/firestore";
+import { bookmark } from "./component/bookmark";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -67,17 +73,20 @@ async function fetchBookmarks(user: User) {
   console.log(user.uid);
   const bookmarksElm = document.getElementById('bookmarks');
   if (bookmarksElm) {
+    bookmarksElm.replaceChildren();
     const bookmarksRef = collection(db, ROOT_DOCUMENT_NAME, user.uid, BOOKMARKS_DOCUMENT_NAME);
     const docs = await getDocs(bookmarksRef);
 
-    docs.forEach(doc => {
-      console.log(doc.id, doc.data());
-      const data = doc.data();
-      const a = document.createElement('a');
-      a.setAttribute('href', data.url);
-      a.textContent = data.title;
-
-      bookmarksElm.append(a);
+    docs.forEach(d => {
+      console.log(d.id, d.data());
+      const data = d.data();
+      const b = bookmark(d.id, data.title, data.url, () => {
+        console.log(`Delete ${d.id}.`);
+        const ref = doc(db, ROOT_DOCUMENT_NAME, user.uid, BOOKMARKS_DOCUMENT_NAME, d.id);
+        deleteDoc(ref);
+        fetchBookmarks(user);
+      });
+      bookmarksElm.append(b);
     });
   }
 }
