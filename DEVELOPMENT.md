@@ -8,6 +8,8 @@ date: 2025/7/14
 
 # プロジェクト作成メモ
 
+## Vite プロジェクト
+
 ```sh
 node ➜ /workspaces/RAT (main) $ npm create vite@latest
 Need to install the following packages:
@@ -37,5 +39,20 @@ Ok to proceed? (y) y
   npm run dev
 
 ```
+
+## Firebase プロジェクト
+
+1. 作成
+    - プロジェクト名: `read-it-later`
+    - Firebase プロジェクトの AI アシスタンス: 有効
+    - Google アナリティクス （Firebase プロジェクト向け）: 有効
+    - Google アナリティクスの構成: `mikoto2000`
+2. Authentication 構築
+    - 追加のプロバイダ: `Google`
+    - プロジェクトの公開名: `read-it-later`
+    - プロジェクトのサポートメール: `mikoto2000@gmail.com`
+3. Firestore Database 構築
+    - ロケーション: `asia-northeast1 (Tokyo)`
+    - セキュリティルール: テストモードで開始
 
 
