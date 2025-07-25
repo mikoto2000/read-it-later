@@ -19,6 +19,29 @@ supabase.auth.onAuthStateChange((event, session) => {
   currentSession = session;
 });
 
+// ブラウザアクションがクリックされたとき
+browser.browserAction.onClicked.addListener(async (tab) => {
+  const url = tab.url;
+  const title = tab.title;
+
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    browser.browserAction.setPopup({ popup: 'popup.html' });
+    browser.browserAction.openPopup();
+    return;
+  }
+
+  console.log("title", title);
+  console.log("url", url);
+
+  const { error } = await supabase.from('bookmark').insert({ title, url });
+  if (error) {
+    console.error('保存失敗:', error);
+  } else {
+    console.log('保存成功');
+  }
+});
+
 browser.runtime.onMessage.addListener((message: { type: string }, _, sendResponse) => {
   if (message.type === "login") {
     doLogin();

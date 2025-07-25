@@ -3,6 +3,7 @@
   "name": "Supabase GitHub Login",
   "version": "1.0",
   "permissions": [
+    "tabs",
     "identity",
     "storage",
     "https://nokxenmhzqsaitgmmvpa.supabase.co/"
@@ -11,7 +12,7 @@
     "scripts": ["background.js"]
   },
   "browser_action": {
-    "default_popup": "./src/popup.html"
+    "default_icon": "icon.png"
   },
   "applications": {
     "gecko": {
