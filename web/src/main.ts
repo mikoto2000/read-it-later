@@ -30,7 +30,10 @@ async function fetchBookmarks(supabase: SupabaseClient) {
 
 async function login(supabase: SupabaseClient) {
   await supabase.auth.signInWithOAuth({
-    provider: 'github'
+    provider: 'github',
+    options: {
+      redirectTo: 'http://localhost:5173'
+    }
   });
 }
 
