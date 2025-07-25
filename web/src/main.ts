@@ -32,7 +32,7 @@ async function login(supabase: SupabaseClient) {
   await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: 'http://localhost:5173'
+      redirectTo: import.meta.env.VITE_SUPABASE_REDIRECT_URL
     }
   });
 }
