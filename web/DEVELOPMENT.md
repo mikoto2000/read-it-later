@@ -6,7 +6,9 @@ date: 2025/7/23
 
 # プロジェクト作成メモ
 
-## Vite プロジェクト
+## Vite プロジェクト作成
+
+### プロジェクト作成
 
 ```sh
 node ➜ /workspaces/RAT (main) $ npm create vite@latest
@@ -36,6 +38,13 @@ Ok to proceed? (y) y
   npm install
   npm run dev
 ```
+
+### 依存パッケージのインストール
+
+```sh
+npm i @supabase/supabase-js
+```
+
 
 ## Supabase プロジェクト
 

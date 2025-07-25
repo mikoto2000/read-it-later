@@ -1,97 +1,73 @@
-import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  signInWithPopup,
-  GoogleAuthProvider,
-  type User,
-  onAuthStateChanged,
-} from "firebase/auth";
-import {
-  collection,
-  doc,
-  deleteDoc,
-  getDocs,
-  getFirestore } from "firebase/firestore";
-import { bookmark } from "./component/bookmark";
+import { createClient, SupabaseClient, type User } from '@supabase/supabase-js'
+import { bookmark } from './component/bookmark';
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-const ROOT_DOCUMENT_NAME = 'read-it-later';
-const BOOKMARKS_DOCUMENT_NAME = 'bookmarks';
-
-let currentUser: User | null = null;
-
-onAuthStateChanged(auth, (user: User | null) => {
-  if (user) {
-    console.log("ログイン済み");
-    currentUser = user;
-    updateProfile();
-    if (currentUser) {
-      fetchBookmarks(currentUser);
-    }
-  } else {
-    console.log("未ログイン");
-    const loginButton = document.getElementById('login-button');
-    if (loginButton) {
-      loginButton.addEventListener('click', login);
-      loginButton.style.display = '';
-    }
-  }
-});
-
-async function login() {
-  const provider = new GoogleAuthProvider();
-  const result = await signInWithPopup(auth, provider);
-  currentUser = result.user;
-  updateProfile();
-  if (currentUser) {
-    fetchBookmarks(currentUser);
-  }
-}
-
-async function updateProfile() {
+async function updateProfile(user: User) {
   // ログインユーザーの情報を #profile へ出力
   const profileElm = document.getElementById('profile');
-  if (profileElm && currentUser) {
-    profileElm.innerHTML = `ユーザー: ${currentUser.displayName}`;
+  if (profileElm && user) {
+    profileElm.innerHTML = `ユーザー: ${user.user_metadata.user_name}`;
   }
 }
 
-async function fetchBookmarks(user: User) {
-
-  console.log(user.uid);
+async function fetchBookmarks(supabase: SupabaseClient) {
   const bookmarksElm = document.getElementById('bookmarks');
   if (bookmarksElm) {
     bookmarksElm.replaceChildren();
-    const bookmarksRef = collection(db, ROOT_DOCUMENT_NAME, user.uid, BOOKMARKS_DOCUMENT_NAME);
-    const docs = await getDocs(bookmarksRef);
 
-    docs.forEach(d => {
-      console.log(d.id, d.data());
-      const data = d.data();
-      const b = bookmark(d.id, data.title, data.url, () => {
-        console.log(`Delete ${d.id}.`);
-        const ref = doc(db, ROOT_DOCUMENT_NAME, user.uid, BOOKMARKS_DOCUMENT_NAME, d.id);
-        deleteDoc(ref);
-        fetchBookmarks(user);
+    const { data: bookmarks } = await supabase.from("bookmark").select();
+    if (bookmarks) {
+      bookmarks.forEach((b) => {
+        const bookmarkElm = bookmark(b.id, b.title, b.url, async () => {
+          console.log(`Delete ${b.id}.`);
+          await supabase.from("bookmark").delete(b.id).eq('id', b.id);
+          fetchBookmarks(supabase);
+        });
+        bookmarksElm.append(bookmarkElm);
       });
-      bookmarksElm.append(b);
-    });
+    }
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+async function login(supabase: SupabaseClient) {
+  await supabase.auth.signInWithOAuth({
+    provider: 'github'
+  });
+}
 
+document.addEventListener('DOMContentLoaded', async () => {
+  // supabase セットアップ
+  const supabase = createClient(
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_ANON_KEY
+  );
+
+  console.log(supabase);
+
+  // セッションを確認し、セッションがなければGitHubでサインイン
+  const { data: { session }} = await supabase.auth.getSession();
+
+  console.log(session);
+
+  if (!session) {
+    console.log("未ログイン");
+    const loginButton = document.getElementById('login-button');
+    if (loginButton) {
+      loginButton.addEventListener('click', () => { login(supabase) });
+      loginButton.style.display = '';
+    }
+  } else {
+    console.log("ログイン済み");
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+      console.log(error);
+    }
+
+    console.log(user);
+
+    if (user) {
+      updateProfile(user);
+      fetchBookmarks(supabase);
+    }
+  }
 });
 
