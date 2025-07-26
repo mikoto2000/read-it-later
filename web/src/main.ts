@@ -29,6 +29,7 @@ async function fetchBookmarks(supabase: SupabaseClient) {
 }
 
 async function login(supabase: SupabaseClient) {
+  console.log("import.meta.env.VITE_SUPABASE_REDIRECT_URL", import.meta.env.VITE_SUPABASE_REDIRECT_URL);
   await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
