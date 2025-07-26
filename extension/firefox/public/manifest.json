@@ -13,11 +13,6 @@
   },
   "browser_action": {
     "default_icon": "icon.png"
-  },
-  "applications": {
-    "gecko": {
-      "id": "rat@mikoto2000.dev"
-    }
   }
 }
 
