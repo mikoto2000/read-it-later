@@ -26,7 +26,7 @@ browser.browserAction.onClicked.addListener(async (tab) => {
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
-    browser.browserAction.setPopup({ popup: 'popup.html' });
+    browser.browserAction.setPopup({ popup: './src/popup.html' });
     browser.browserAction.openPopup();
     return;
   }
@@ -73,6 +73,7 @@ async function doLogin() {
   if (access_token && refresh_token) {
     console.log("setSession");
     await supabase.auth.setSession({ access_token, refresh_token });
+    browser.browserAction.setPopup({ popup: null });
   }
 }
 
